@@ -94,19 +94,26 @@ char *get_sites_list(struct Sites *sites) {
 int create_directories(struct Sites *sites) {
   int i = 0;
   int path_len = 0;
+  
   char *folder = "backups/";
+
+  chdir(folder);
+
   for (i = 0; i < sites->count; i++) {
     struct stat info;
     struct Site *site = &sites->entries[i];
     path_len = strlen(folder) + strlen(site->dir) + 1;
     char *path = malloc(sizeof(char) * path_len);
     strncpy(path, folder, strlen(folder));
-    strncpy(path, site->dir, strlen(site->dir));
+    strncpy(path + (sizeof(char) * strlen(folder)), site->dir, strlen(site->dir));
     path[path_len - 1] = '\0';
 
     mkdir(site->dir, S_IRUSR | S_IWUSR | S_IXUSR);
     free(path);
   }
+
+  chdir("..");
+
   return 0;
 }
 
