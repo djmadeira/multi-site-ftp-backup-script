@@ -20,10 +20,21 @@ struct Sites {
   int count;
 };
 
+void consume_whitespace(FILE *buffer) {
+  char l = fgetc(buffer);
+  while(l == ' ' || l == '\n') {
+    l = fgetc(buffer);
+  }
+  fseek(buffer, sizeof(char) * -1L, SEEK_CUR);
+}
+
+// Create a string for a single token, skipping over white space before & after
 char *consume_data(FILE *buffer, const char seperator) {
-  int read = 1;
-  char l = 0;
-  char letter[1];
+  int read = 1; // extra char for \0
+  int offset = 0;
+  char l;
+
+  consume_whitespace(buffer);
 
   l = fgetc(buffer);
   while (l != seperator && l != '\n' && l != EOF) {
@@ -31,52 +42,78 @@ char *consume_data(FILE *buffer, const char seperator) {
     l = fgetc(buffer);
   }
 
+  // Fix fseek not being where we expect if fgetc fails
+  if (l == EOF) {
+    offset = -1;
+  }
+
   char *output = malloc(sizeof(char) * read);
-  fseek(buffer, read * sizeof(char) * -1L, SEEK_CUR);
+  fseek(buffer, (read + offset) * sizeof(char) * -1L, SEEK_CUR); // go to beginning of token
   fgets(output, read, buffer);
+
   if (l != EOF) {
-    fseek(buffer, sizeof(char) * 1L, SEEK_CUR);
+    consume_whitespace(buffer);
   }
 
   return output;
 }
 
+// Setup structs for all the sites
 struct Sites *get_sites(char *file_path) {
   int count = 0;
   int i = 0;
   char l = 0;
 
   char *mode = "r";
-  FILE *sites_file = fopen(file_path, mode);
+  FILE *sites_conf = fopen(file_path, mode);
+  if (sites_conf == NULL) {
+    printf("ERR: sites_conf not found or could not be read.\n");
+    exit(1);
+  }
 
-  l = fgetc(sites_file);
+  // Get the number of sites so we can allocate memory for them
+  l = fgetc(sites_conf);
+  int was_nl = 0;
   while(l != EOF) {
     if (l == '\n') {
       count++;
+      was_nl = 1;
     }
-    l = fgetc(sites_file);
+
+    // Make files that don't end in \n work
+    l = fgetc(sites_conf);
+    if (l == EOF && was_nl == 0) {
+      count++;
+    }
+    was_nl = 0;
   }
 
   struct Sites *sites = malloc(sizeof(struct Sites));
   sites->count = count;
   sites->entries = malloc(count * sizeof(struct Site));
 
-  rewind(sites_file);
+  // Parse sites_conf
+  rewind(sites_conf);
   for(i = 0; i < sites->count; i++) {
     struct Site *site = &sites->entries[i];
 
-    char *dir = consume_data(sites_file, ' ');
-    char *login = consume_data(sites_file, ' ');
-    char *host = consume_data(sites_file, ' ');
+    char *dir = consume_data(sites_conf, ' ');
+    char *login = consume_data(sites_conf, ' ');
+    char *host = consume_data(sites_conf, ' ');
 
     strncpy(site->dir, dir, MAX_DIR_LEN);
     strncpy(site->login, login, MAX_LOGIN_LEN);
     strncpy(site->host, host, MAX_HOST_LEN);
+
+    free(dir);
+    free(login);
+    free(host);
   }
 
   return sites;
 }
 
+// Get a list of all sites for the bash script to iterate over
 char *get_sites_list(struct Sites *sites) {
   int i = 0;
   char *sep = " ";
@@ -91,6 +128,7 @@ char *get_sites_list(struct Sites *sites) {
   return sites_list;
 }
 
+// Setup the backups/* directories
 int create_directories(struct Sites *sites) {
   int i = 0;
   int path_len = 0;
@@ -118,7 +156,7 @@ int create_directories(struct Sites *sites) {
 }
 
 int main (int argc, char *argv[]) {
-  char *data_file = "./sites";
+  char *data_file = "./sites_conf";
   struct Sites *all_sites = get_sites(data_file);
 
   if (argc == 2 && argv[1][0] == 'l') {
@@ -144,7 +182,7 @@ int main (int argc, char *argv[]) {
     create_directories(all_sites);
 
   } else {
-    printf("USAGE: readsites <l|g|d> [index]\n");
+    printf("USAGE: readsites <l|g|d> [index] [h|d|l]\n");
     return 1;
   }
 
