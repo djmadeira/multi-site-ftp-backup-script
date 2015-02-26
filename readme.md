@@ -12,7 +12,7 @@ Install [LFTP](http://lftp.yar.ru).
 
 Add execute permissions to the backup script:
 
-$ chmod +x backup.sh
+    $ chmod +x backup.sh
 
 ## Usage
 Create your configuration CSV file with the following fields:
