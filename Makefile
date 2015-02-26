@@ -1,2 +1,6 @@
+CFLAGS=-Wall -g -DNDEBUG
+
 all:
-	make readsites
+	make csvr
+
+csvr: libcsv/libcsv.o

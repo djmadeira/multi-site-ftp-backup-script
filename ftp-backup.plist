@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+       "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>ftpBackupScript</string>
+  <key>Program</key>
+  <string>{/path/to/backup.sh}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>{/path/to/backup.sh}</string>
+    <string>{/path/to/sites_conf.csv}</string>
+    <string>{/path/to/backup/folder}</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>SHELL</key>
+    <string>/bin/bash</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StartInterval</key>
+  <!-- 24 hours -->
+  <integer>86400</integer>
+  <!-- These keys are not required, but highly recommended as they will help you identify problems and send bug reports
+  <key>StandardOutPath</key>
+  <string>{/path/to/stdout.log}</string>
+  <key>StandardErrorPath</key>
+  <string>{/path/to/stderr.log}</string> -->
+</dict>
+</plist>

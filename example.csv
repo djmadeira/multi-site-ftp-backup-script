@@ -1,0 +1,2 @@
+NAME,USER,PASSWORD,PROTOCOL,HOST,DIR,KEEP
+example,user@example.com,test,sftp,ftp.example.com,/public_html,0
