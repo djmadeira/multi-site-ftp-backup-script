@@ -27,11 +27,11 @@ do
 	KEEP=$(csvr -r $COUNTER -c KEEP $FILE)
 	DATE=$(date "+%y-%m-%d-%H-%M")
 
-	echo "Backing up site $NAME"
+	echo "Backing up site \"$NAME\""
 
 	if [ -z "$KEEP" ];
 	then
-		KEEP=1
+		KEEP=0
 	fi
 
 	case $PROTOCOL in
@@ -47,7 +47,15 @@ do
 		mkdir -p $DEST/$NAME
 	fi
 
-	lftp -e "set ftp:ssl-allow $SSLENABLE; mirror $DIR $DEST/$NAME; bye" -u $USER,$PASS $PROTOCOL://$HOST
+	CONNERR=$(lftp -e "set ftp:ssl-allow $SSLENABLE; set net:max-retries 1; set cmd:trace true; ls; bye" -u $USER,$PASS $PROTOCOL://$HOST)
+
+	if [ $? -eq 0 ]
+	then
+		lftp -e "set ftp:ssl-allow $SSLENABLE; mirror $DIR $DEST/$NAME; pwd; bye" -u $USER,$PASS $PROTOCOL://$HOST
+	else
+		echo "$CONNERR"
+		echo "Error connecting to site \"$NAME\". Verify that the login, host and protocol are correct."
+	fi
 
 	if [ $KEEP -gt 0 ]
 	then
