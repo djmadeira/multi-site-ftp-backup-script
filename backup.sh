@@ -25,6 +25,7 @@ do
 	PASS=$(csvr -r $COUNTER -c PASSWORD $FILE)
 	HOST=$(csvr -r $COUNTER -c HOST $FILE)
 	KEEP=$(csvr -r $COUNTER -c KEEP $FILE)
+	FLAGS=$(csvr -r $COUNTER -c FLAGS $FILE)
 	DATE=$(date "+%y-%m-%d-%H-%M")
 
 	echo "Backing up site \"$NAME\""
@@ -51,7 +52,7 @@ do
 
 	if [ $? -eq 0 ]
 	then
-		lftp -e "set ftp:ssl-allow $SSLENABLE; mirror $DIR $DEST/$NAME; pwd; bye" -u $USER,$PASS $PROTOCOL://$HOST
+		lftp -e "set ftp:ssl-allow $SSLENABLE; mirror $FLAGS $DIR $DEST/$NAME; pwd; bye" -u $USER,$PASS $PROTOCOL://$HOST
 	else
 		echo "$CONNERR"
 		echo "Error connecting to site \"$NAME\". Verify that the login, host and protocol are correct."

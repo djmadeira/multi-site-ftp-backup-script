@@ -1,25 +1,27 @@
-# FTP Backup Script
-This is a simple utility for backing up a lot of S/FTP sites quickly and with minimum effot. It uses a CSV file for configuration, and can be configured to run as a daemon/agent using the included plist file.
+# Multi-site LFTP Backup Script
+This script is designed to make it easy to back up lots of FTP directories (such as a lot of websites with separate FTP connection details) really quickly using only FTP. It uses a CSV file for configuration, and uses LFTP's mirror command for the FTP transaction, meaning it only downloads changed files, saving a ton of bandwidth.
 
-It uses LFTP's mirror command for the FTP transaction, so it can run as often as you want without taking up very much of bandwidth.
+The script can make a gzip of the files after downloading, and delete previous archives that exceed X total backups (configurable with the KEEP field in the CSV.) The idea being that if you scheduled the script to run daily, you can configure it to keep 10 day's worth of backups.
 
-It will gzip the files after downloading, and delete previous archives that exceed X total backups (configurable per-site in the CSV.) The idea is that you can schedule the script to run however often you want using launcd, and configure it to keep X backups at a time.
+The script can be configured to run as a daemon/agent on systems with launchd (such as OS X) using the included plist file. See [launchd.info](http://launchd.info).
 
 ## Installation
 Install [csvr](https://github.com/djmadeira/csvr), a wrapper utility for the libcsv C library.
 
-Install [LFTP](http://lftp.yar.ru).
+Install [LFTP](http://lftp.yar.ru). (With [Homebrew](http://brew.sh): `$ brew install lftp`
 
 Add execute permissions to the backup script:
 
     $ chmod +x backup.sh
 
-## Usage
+## Configuration Options
 Create your configuration CSV file with the following fields:
 
-NAME,USER,PASSWORD,PROTOCOL,HOST,DIR,KEEP
+NAME,USER,PASSWORD,PROTOCOL,HOST,DIR,KEEP,FLAGS
 
 (Having a header row in the CSV file that looks like the line above is required; see example.csv)
+
+If you have a comma in a field, make sure you wrap the field in double quotes, and if you have double quoted a field, make sure to escape any double quotes with an extra " (I didn't write the spec); see example.csv.
 
 ### NAME
 This is the directory name of the entry. It will be refered to by this name in the output, and placed in a corresponding subdirectory.
@@ -28,24 +30,29 @@ This is the directory name of the entry. It will be refered to by this name in t
 This is the FTP login that LFTP will use to connect.
 
 ### PROTOCOL
-The protocol with which to connect. Can be anything LFTP supports.
+The protocol to use. Can be anything LFTP supports (ftp, sftp, etc.).
 
 ### HOST
-The host to connect to. Can be anything that LFTP supports.
+The host to connect to, e.g. ftp.example.com:22. Can be anything that LFTP supports.
 
 ### DIR
-The directory to download on the remote FTP server. Example: /data/domains/example.com/public
+The directory to download on the remote FTP server. Example: /data/domains/example.com/public_html
 
 ### KEEP
-The number of backups to keep. How often you run the script is up to you, but the number of zips that the script should keep is configurable on a per-site basis. Set to 0 to disable zips entirely.
+The number of gziped backups to keep. Set to 0 to disable zips entirely.
 
-With your config CSV created up, run:
+### FLAGS
+Flags to pass to LFTP's mirror command, e.g. --exclude. See the mirror section of [LFTP's man page](http://lftp.yar.ru/lftp-man.html)
+
+## Usage
 
     $ ./backup.sh <path/to/config.csv> <path/to/backup/folder>
 
-backup.sh will create all the requisite folders automatically.
-
 ## Changelog
+
+### 1.2
+* Fixed script endlessly retrying a bad connection
+* Added "FLAGS" field to allow options to be passed to the mirror command on a site-by-site basis
 
 ### 1.1
 * Complete rewrite
