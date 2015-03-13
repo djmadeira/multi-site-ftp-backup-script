@@ -80,3 +80,5 @@ do
 	let COUNTER=COUNTER+1
 	NAME=$(csvr -r $COUNTER -c 0 $FILE)
 done
+
+exit 0
