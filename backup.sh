@@ -26,9 +26,9 @@ do
 	HOST=$(csvr -r $COUNTER -c HOST $FILE)
 	KEEP=$(csvr -r $COUNTER -c KEEP $FILE)
 	FLAGS=$(csvr -r $COUNTER -c FLAGS $FILE)
-	DATE=$(date "+%y-%m-%d-%H-%M")
+	DATE=$(date "+%y-%m-%d_%H-%M")
 
-	echo "Backing up site \"$NAME\""
+	echo "$DATE: Backing up site \"$NAME\""
 
 	if [ -z "$KEEP" ];
 	then
@@ -62,7 +62,7 @@ do
 	then
 		tar -zcf $DEST/$NAME.$DATE.tar.gz -C $DEST $NAME
 
-		REMOVE="$(find $DEST -maxdepth 1 -not -type d | grep $NAME)"
+		REMOVE="$(find $DEST -maxdepth 1 -not -type d | grep $NAME | sort -r)"
 		TOTALCOUNT=$(wc -l <<< "$REMOVE")
 		RMCOUNT=$(($TOTALCOUNT - $KEEP))
 		if [ $RMCOUNT -lt 0 ]

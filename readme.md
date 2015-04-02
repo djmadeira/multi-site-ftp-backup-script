@@ -50,6 +50,10 @@ Flags to pass to LFTP's mirror command, e.g. --exclude. See the mirror section o
 
 ## Changelog
 
+### 1.2.1
+* Fixed a bug where new zips were deleted and old ones were kept
+* Added the date to the output log for easier debugging
+
 ### 1.2
 * Fixed script endlessly retrying a bad connection
 * Added "FLAGS" field to allow options to be passed to the mirror command on a site-by-site basis
